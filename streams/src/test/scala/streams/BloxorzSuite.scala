@@ -76,4 +76,15 @@ class BloxorzSuite extends FunSuite {
     }
   }
 
+  test("neighborsWithHistory") {
+    new Level1 {
+      val inputBlock = Block(Pos(1,1),Pos(1,1))
+      val expectedOutput = Set(
+        (Block(Pos(1,2),Pos(1,3)), List(Right,Left,Up)),
+        (Block(Pos(2,1),Pos(3,1)), List(Down,Left,Up))
+      )
+      assert(neighborsWithHistory(inputBlock, List(Left,Up)).toSet == expectedOutput)
+    }
+  }
+
 }

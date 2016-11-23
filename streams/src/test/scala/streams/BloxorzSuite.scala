@@ -1,11 +1,8 @@
 package streams
 
-import org.scalatest.FunSuite
-
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-
-import Bloxorz._
 
 @RunWith(classOf[JUnitRunner])
 class BloxorzSuite extends FunSuite {
@@ -53,6 +50,9 @@ class BloxorzSuite extends FunSuite {
       assert(!terrain(Pos(4,11)), "4,11")
       assert(!terrain(Pos(-1,0)), "-1,0")
       assert(!terrain(Pos(0,-1)), "0,-1")
+
+      //mine
+      assert(!terrain(Pos(4,4)), "4,4")
     }
   }
 
@@ -63,7 +63,7 @@ class BloxorzSuite extends FunSuite {
   }
 
 
-	test("optimal solution for level 1") {
+	test("solution for level 1") {
     new Level1 {
       assert(solve(solution) == Block(goal, goal))
     }
@@ -84,6 +84,35 @@ class BloxorzSuite extends FunSuite {
         (Block(Pos(2,1),Pos(3,1)), List(Down,Left,Up))
       )
       assert(neighborsWithHistory(inputBlock, List(Left,Up)).toSet == expectedOutput)
+    }
+  }
+
+  test("newNeighborsOnly") {
+    new Level1 {
+      val newNeighbors = newNeighborsOnly(
+        Set(
+          (Block(Pos(1, 2), Pos(1, 3)), List(Right, Left, Up)),
+          (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
+        ).toStream,
+        Set(Block(Pos(1, 2), Pos(1, 3)), Block(Pos(1, 1), Pos(1, 1)))
+      )
+      val expectedResult = Set(
+        (Block(Pos(2, 1), Pos(3, 1)), List(Down, Left, Up))
+      )
+      assert(newNeighbors.toSet == expectedResult)
+    }
+  }
+
+  test("neighbors") {
+    new InfiniteTerrain {
+      val startPos = Pos(0, 0)
+      val goal = Pos(0, 0)
+      val neighbors = startBlock.neighbors.map(_._1).toSet
+      val left = Block(Pos(0, -2), Pos(0, -1))
+      val right = Block(Pos(0, 1), Pos(0, 2))
+      val up = Block(Pos(1, 0), Pos(2, 0))
+      val down = Block(Pos(-2, 0), Pos(-1, 0))
+      assert(neighbors == Set(left, right, up, down))
     }
   }
 

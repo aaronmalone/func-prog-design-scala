@@ -95,7 +95,7 @@ trait Solver extends GameDef {
    * with the history how it was reached.
    */
   lazy val pathsToGoal: Stream[(Block, List[Move])] =
-    pathsFromStart.filter(blockMoves => done(blockMoves._1))
+    pathsFromStart.filter(blockMoves => done(blockMoves.block))
 
   /**
    * The (or one of the) shortest sequence(s) of moves to reach the
@@ -105,5 +105,5 @@ trait Solver extends GameDef {
    * the first move that the player should perform from the starting
    * position.
    */
-  lazy val solution: List[Move] = pathsToGoal.head._2
+  lazy val solution: List[Move] = pathsToGoal.head.history
 }

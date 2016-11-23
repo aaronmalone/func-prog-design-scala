@@ -45,7 +45,7 @@ trait Solver extends GameDef {
   def newNeighborsOnly(neighbors: Stream[(Block, List[Move])],
                        explored: Set[Block]): Stream[(Block, List[Move])] = {
     def notExplored(b: Block) = !explored(b)
-    neighbors.filter(neighbor => notExplored(neighbor.block))
+    for (neighbor <- neighbors if notExplored(neighbor.block)) yield neighbor
   }
 
   /**

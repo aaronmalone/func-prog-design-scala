@@ -73,15 +73,11 @@ trait Solver extends GameDef {
    */
   def from(initial: Stream[(Block, List[Move])], explored: Set[Block]): Stream[(Block, List[Move])] = {
 
-    if (initial.isEmpty) {
-      Stream.empty
-    } else {
-      def fromBlock(bh: BlockHistory): Stream[(Block, List[Move])] =
-        newNeighborsOnly(neighborsWithHistory(bh.block, bh.history), explored)
+    def fromBlock(bh: BlockHistory): Stream[(Block, List[Move])] =
+      newNeighborsOnly(neighborsWithHistory(bh.block, bh.history), explored)
 
-      val allNeighbors = initial.flatMap(fromBlock(_))
-      initial #::: from(allNeighbors, allNeighbors.map(_.block) ++: explored)
-    }
+    val next = for (bh <- initial; x <- fromBlock(bh)) yield x
+    initial #::: from(next, next.map(_.block) ++: explored)
   }
 
   /**

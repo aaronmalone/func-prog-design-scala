@@ -37,6 +37,16 @@ class BloxorzSuite extends FunSuite {
     val optsolution = List(Right, Right, Down, Right, Right, Right, Down)
   }
 
+  trait NoSolution extends GameDef with Solver with StringParserTerrain {
+    val level =
+      """ooo-------
+        |oSoooo----
+        |ooooooo---
+        |-ooooooo--
+        |------oTo-
+        |------ooo-""".stripMargin
+  }
+
 
 	test("terrain function level 1") {
     new Level1 {
@@ -113,6 +123,12 @@ class BloxorzSuite extends FunSuite {
       val up = Block(Pos(1, 0), Pos(2, 0))
       val down = Block(Pos(-2, 0), Pos(-1, 0))
       assert(neighbors == Set(left, right, up, down))
+    }
+  }
+
+  test("no solution") {
+    new NoSolution {
+      assert(this.solution.length == 0)
     }
   }
 

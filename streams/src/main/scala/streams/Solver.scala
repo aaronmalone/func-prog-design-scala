@@ -5,6 +5,9 @@ package streams
  */
 trait Solver extends GameDef {
 
+  /* Number of paths to explore */
+  val limit = 1000
+
   implicit class BlockHistory(arg: (Block, List[Move])) {
     def block: Block = arg._1
     def history: List[Move] = arg._2
@@ -72,19 +75,27 @@ trait Solver extends GameDef {
    * construct the correctly sorted stream.
    */
   def from(initial: Stream[(Block, List[Move])], explored: Set[Block]): Stream[(Block, List[Move])] = {
+    def fromInternal(
+                      init: Stream[(Block, List[Move])],
+                      acc: Stream[(Block, List[Move])],
+                      exploredSet: Set[Block]): Stream[(Block, List[Move])] = {
+      if (init.isEmpty) acc
+      else {
+        def fromBlock(bh: BlockHistory): Stream[(Block, List[Move])] =
+          newNeighborsOnly(neighborsWithHistory(bh.block, bh.history), exploredSet)
+        val next = for(bh<-init; x<-fromBlock(bh)) yield x
+        fromInternal(next, acc #::: next, next.map(_.block) ++: exploredSet)
+      }
+    }
 
-    def fromBlock(bh: BlockHistory): Stream[(Block, List[Move])] =
-      newNeighborsOnly(neighborsWithHistory(bh.block, bh.history), explored)
-
-    val next = for (bh <- initial; x <- fromBlock(bh)) yield x
-    initial #::: from(next, next.map(_.block) ++: explored)
+    fromInternal(initial, Stream.empty, explored)
   }
 
   /**
    * The stream of all paths that begin at the starting block.
    */
   lazy val pathsFromStart: Stream[(Block, List[Move])] =
-    from(Stream((startBlock, List.empty)), Set(startBlock))
+    from(Stream((startBlock, List.empty)), Set(startBlock)).take(limit)
 
   /**
    * Returns a stream of all possible pairs of the goal block along
@@ -101,5 +112,10 @@ trait Solver extends GameDef {
    * the first move that the player should perform from the starting
    * position.
    */
-  lazy val solution: List[Move] = pathsToGoal.head.history
+  lazy val solution: List[Move] =
+    if (pathsToGoal.isEmpty) {
+      Nil
+    } else {
+      pathsToGoal.head.history
+    }
 }

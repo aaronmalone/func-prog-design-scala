@@ -16,32 +16,77 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
   implicit lazy val arbHeap: Arbitrary[H] = Arbitrary(genHeap)
 
-  /* if you insert into a heap the current minimum of that heap, the new minimum is the same */
-  /* bogus 2 */
+  val emptyGen = const(empty)
+
+  val nonEmpty: Gen[H] = for {
+    n <- arbitrary[Int]
+    h <- oneOf(emptyGen, nonEmpty)
+  } yield insert(n, h)
+
+  val pairOfNonEmpties = for {
+    x <- nonEmpty
+    y <- nonEmpty
+  } yield (x, y)
+
   property("gen1") = forAll { (h: H) =>
     val m = if (isEmpty(h)) 0 else findMin(h)
     findMin(insert(m, h)) == m
   }
 
-  /* if you meld a heap with the empty heap, the minimum of the result heap is the min of the non-empty heap */
-  /* bogus 5 */
-  property("meld empty") = forAll { (h: H) =>
-    val melded = meld(h, empty)
-    isEmpty(melded) || findMin(melded) == findMin(h)
+  property("insert first element") = forAll { (n: Int) =>
+    n == findMin(insert(n, empty))
   }
 
-  /* bogus 1 */
+  property("insert two elements") = forAll { (n: Int) => /* seems to get 2 */
+    val oneElement = insert(n, empty)
+    val twoElements = insert(n + 1, oneElement)
+    val overflow = n + 1 < n
+    overflow || n == findMin(twoElements)
+  }
+
+  property("meld two non empty") = forAll(pairOfNonEmpties) { pair => /* 1 and 5 */
+    val h1 = pair._1
+    val h2 = pair._2
+    val m1 = findMin(h1)
+    val m2 = findMin(h2)
+    val m = findMin(meld(h1, h2))
+    m == m1 || m == m2
+  }
+
   property("delete only element") = forAll { (n: Int) =>
-    val heap = deleteMin(insert(n, empty))
-    isEmpty(heap)
+    val h = deleteMin(insert(n, empty))
+    isEmpty(h)
   }
 
-/*  property("min of melded heaps should be min of one or other") = forAll { (h1: H, h2: H, n: Int) =>
-    val nonEmpty1 = insert(n, h1)
-    val nonEmpty2 = insert(n, h2)
-    val m1 = findMin(nonEmpty1)
-    val m2 = findMin(nonEmpty2)
-    val newMin = findMin(meld(nonEmpty1, nonEmpty2))
-    newMin == m1 || newMin == m2
-  }*/
+  property("min should be existing min or added element") = forAll(nonEmpty) { h =>
+    val originalMin = findMin(h)
+    val rand = new java.util.Random().nextInt()
+    val newMin = findMin(insert(rand, h))
+    newMin == rand || newMin == originalMin
+  }
+
+  property("meld equivalent heaps") = forAll { (n: Int) =>
+    val h1 = insert(n, empty)
+    val h2 = insert(n, empty)
+    equal(h1, h2) && isEmpty(deleteMin(deleteMin(meld(h1, h2))))
+  }
+
+  property("meld equivalent to inserting all elements") = forAll { (h1: H, h2: H) =>
+    val meldResult = meld(h1, h2)
+    var insertInto = h1
+    var deleteFrom = h2
+    while(!isEmpty(deleteFrom)) {
+      insertInto = insert(findMin(deleteFrom), insertInto)
+      deleteFrom = deleteMin(deleteFrom)
+    }
+    equal(meldResult, insertInto)
+  }
+
+  def equal(h1: H, h2: H): Boolean = {
+    if (isEmpty(h1)) isEmpty(h2)
+    else {
+      findMin(h1) == findMin(h2) && equal(deleteMin(h1), deleteMin(h2))
+    }
+  }
+
 }

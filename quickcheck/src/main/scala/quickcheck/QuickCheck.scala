@@ -16,11 +16,9 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
   implicit lazy val arbHeap: Arbitrary[H] = Arbitrary(genHeap)
 
-  val emptyGen = const(empty)
-
   val nonEmpty: Gen[H] = for {
     n <- arbitrary[Int]
-    h <- oneOf(emptyGen, nonEmpty)
+    h <- oneOf(const(empty), nonEmpty)
   } yield insert(n, h)
 
   val pairOfNonEmpties = for {
@@ -31,17 +29,6 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
   property("gen1") = forAll { (h: H) =>
     val m = if (isEmpty(h)) 0 else findMin(h)
     findMin(insert(m, h)) == m
-  }
-
-  property("insert first element") = forAll { (n: Int) =>
-    n == findMin(insert(n, empty))
-  }
-
-  property("insert two elements") = forAll { (n: Int) => /* seems to get 2 */
-    val oneElement = insert(n, empty)
-    val twoElements = insert(n + 1, oneElement)
-    val overflow = n + 1 < n
-    overflow || n == findMin(twoElements)
   }
 
   property("meld two non empty") = forAll(pairOfNonEmpties) { pair => /* 1 and 5 */
@@ -58,24 +45,19 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     isEmpty(h)
   }
 
-  property("min should be existing min or added element") = forAll(nonEmpty) { h =>
-    val originalMin = findMin(h)
-    val rand = new java.util.Random().nextInt()
-    val newMin = findMin(insert(rand, h))
-    newMin == rand || newMin == originalMin
-  }
-
-  property("meld equivalent heaps") = forAll { (n: Int) =>
-    val h1 = insert(n, empty)
-    val h2 = insert(n, empty)
-    equal(h1, h2) && isEmpty(deleteMin(deleteMin(meld(h1, h2))))
+  property("meld equivalent to inserting all elements if one heap empty") = forAll(nonEmpty) { h =>
+    meldEquivalentToInsertingAll(empty, h) && meldEquivalentToInsertingAll(h, empty)
   }
 
   property("meld equivalent to inserting all elements") = forAll { (h1: H, h2: H) =>
+    meldEquivalentToInsertingAll(h1, h2)
+  }
+
+  def meldEquivalentToInsertingAll(h1: H, h2: H): Boolean = {
     val meldResult = meld(h1, h2)
     var insertInto = h1
     var deleteFrom = h2
-    while(!isEmpty(deleteFrom)) {
+    while (!isEmpty(deleteFrom)) {
       insertInto = insert(findMin(deleteFrom), insertInto)
       deleteFrom = deleteMin(deleteFrom)
     }

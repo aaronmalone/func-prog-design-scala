@@ -36,12 +36,12 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     isEmpty(heap)
   }
 
-  property("min of melded heaps should be min of one or other") = forAll { (h1: H, h2: H, n: Int) =>
+/*  property("min of melded heaps should be min of one or other") = forAll { (h1: H, h2: H, n: Int) =>
     val nonEmpty1 = insert(n, h1)
     val nonEmpty2 = insert(n, h2)
     val m1 = findMin(nonEmpty1)
     val m2 = findMin(nonEmpty2)
     val newMin = findMin(meld(nonEmpty1, nonEmpty2))
     newMin == m1 || newMin == m2
-  }
+  }*/
 }

@@ -18,7 +18,7 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
   val nonEmpty: Gen[H] = for {
     n <- arbitrary[Int]
-    h <- oneOf(const(empty), nonEmpty)
+    h <- genHeap
   } yield insert(n, h)
 
   val pairOfNonEmpties = for {
@@ -31,7 +31,7 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     findMin(insert(m, h)) == m
   }
 
-  property("meld two non empty") = forAll(pairOfNonEmpties) { pair => /* 1 and 5 */
+  property("meld two non empty") = forAll(pairOfNonEmpties) { pair =>
     val h1 = pair._1
     val h2 = pair._2
     val m1 = findMin(h1)

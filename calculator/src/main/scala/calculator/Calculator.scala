@@ -15,7 +15,14 @@ object Calculator {
   }
 
   def eval(expr: Expr, references: Map[String, Signal[Expr]]): Double = {
-    ???
+    expr match {
+      case Literal(d) => d
+      case Ref(r) => {
+        if(references.contains(r)) {
+          eval(references(r)(), references)
+        } else Double.NaN
+      }
+    }
   }
 
   /** Get the Expr for a referenced variables.

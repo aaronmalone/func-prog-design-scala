@@ -51,4 +51,20 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     assert(resultRed2() == "red")
   }
 
+  test("calculator: literals") {
+    val result = Calculator.eval(Literal(Math.PI), Map.empty)
+    assert(result == Math.PI)
+  }
+
+  test("calculator: ref") {
+    val literalE = Literal(Math.E)
+    val result = Calculator.eval(Ref("foo"), Map("foo" -> Signal(literalE)))
+    assert(result == Math.E)
+  }
+
+  test("calculator: undefined variable") {
+    val result = Calculator.eval(Ref("foo"), Map.empty)
+    assert(result.isNaN)
+  }
+
 }

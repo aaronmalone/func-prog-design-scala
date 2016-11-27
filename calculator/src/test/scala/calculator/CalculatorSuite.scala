@@ -2,8 +2,8 @@ package calculator
 
 import calculator.TweetLength.MaxTweetLength
 import org.junit.runner.RunWith
-import org.scalatest.{FunSuite, _}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{FunSuite, _}
 
 @RunWith(classOf[JUnitRunner])
 class CalculatorSuite extends FunSuite with ShouldMatchers {
@@ -69,6 +69,38 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     val p = Plus(e1, e2)
     val result = Calculator.eval(p, Map.empty)
     assert(result == 7)
+  }
+
+  test("calculator: times") {
+    val e1 = Literal(2)
+    val e2 = Literal(5)
+    val t = Times(e1, e2)
+    val result = Calculator.eval(t, Map.empty)
+    assert(result == 10)
+  }
+
+  test("calculator: minus") {
+    val n1 = 8
+    val n2 = 5
+    val m = Minus(Literal(n1), Literal(n2))
+    val result = Calculator.eval(m, Map.empty)
+    assert(result == 3)
+  }
+
+  test("calculator: divide") {
+    val n1 = 64
+    val n2 = 16
+    val d = Divide(Literal(n1), Literal(n2))
+    val result = Calculator.eval(d, Map.empty)
+    assert(result == 4)
+  }
+
+  test("calculator: cyclic dependencies") {
+    val a = Plus(Ref("b"), Literal(1))
+    val b = Times(Literal(2), Ref("a"))
+    val refs = Map("a" -> a, "b" -> b)
+    val result = Calculator.eval(Ref("a"), refs mapValues {Signal(_)})
+    assert(result.isNaN)
   }
 
 }

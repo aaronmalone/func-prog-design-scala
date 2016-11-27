@@ -1,13 +1,9 @@
 package calculator
 
-import org.scalatest.FunSuite
-
+import calculator.TweetLength.MaxTweetLength
 import org.junit.runner.RunWith
+import org.scalatest.{FunSuite, _}
 import org.scalatest.junit.JUnitRunner
-
-import org.scalatest._
-
-import TweetLength.MaxTweetLength
 
 @RunWith(classOf[JUnitRunner])
 class CalculatorSuite extends FunSuite with ShouldMatchers {
@@ -65,6 +61,14 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
   test("calculator: undefined variable") {
     val result = Calculator.eval(Ref("foo"), Map.empty)
     assert(result.isNaN)
+  }
+
+  test("calculator: plus") {
+    val e1 = Literal(3)
+    val e2 = Literal(4)
+    val p = Plus(e1, e2)
+    val result = Calculator.eval(p, Map.empty)
+    assert(result == 7)
   }
 
 }

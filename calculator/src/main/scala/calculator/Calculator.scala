@@ -22,6 +22,7 @@ object Calculator {
           eval(references(r)(), references)
         } else Double.NaN
       }
+      case Plus(x,y) => eval(x, references) + eval(y, references)
     }
   }
 
